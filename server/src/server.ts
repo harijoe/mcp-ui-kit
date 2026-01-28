@@ -1,6 +1,7 @@
 import { McpServer } from "skybridge/server";
 import { basicAnswerWidget } from "./widgets/basic-answer-server";
-import { ecomCarouselWidget } from "./widgets/ecommerce-products-server";
+import { checkboxOptionsWidget } from "./widgets/checkbox-options-server";
+import { ecomCarouselWidget } from "./widgets/e-commerce-server";
 import { radioOptionsWidget } from "./widgets/radio-options-server";
 
 const server = new McpServer(
@@ -17,16 +18,22 @@ const server = new McpServer(
     basicAnswerWidget.handler
   )
   .registerWidget(
-    ecomCarouselWidget.name,
-    ecomCarouselWidget.metadata,
-    ecomCarouselWidget.toolConfig,
-    ecomCarouselWidget.handler
-  )
-  .registerWidget(
     radioOptionsWidget.name,
     radioOptionsWidget.metadata,
     radioOptionsWidget.toolConfig,
     radioOptionsWidget.handler
+  )
+  .registerWidget(
+    checkboxOptionsWidget.name,
+    checkboxOptionsWidget.metadata,
+    checkboxOptionsWidget.toolConfig,
+    checkboxOptionsWidget.handler
+  )
+  .registerWidget(
+    ecomCarouselWidget.name,
+    ecomCarouselWidget.metadata,
+    ecomCarouselWidget.toolConfig,
+    ecomCarouselWidget.handler
   );
 
 export default server;

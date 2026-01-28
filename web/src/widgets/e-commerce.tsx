@@ -50,7 +50,7 @@ function EcomCarousel() {
     return translations[lang]?.[key] ?? translations.en[key];
   }
 
-  const { output, isPending } = useToolInfo<"ecom-carousel">();
+  const { output, isPending } = useToolInfo<"e-commerce">();
   type Product = NonNullable<typeof output>["products"][number];
   const [showCheckout, setShowCheckout] = useState(false);
 

@@ -13,7 +13,7 @@ export type Product = {
 
 // E-commerce Carousel widget configuration
 export const ecomCarouselWidget = {
-  name: "ecom-carousel" as const,
+  name: "e-commerce" as const,
   metadata: {
     description: "E-commerce Product Carousel",
     _meta: {
@@ -25,7 +25,7 @@ export const ecomCarouselWidget = {
     },
   },
   toolConfig: {
-    description: "Display a carousel of products from the store.",
+    description: "Display a list of products from the store.",
     inputSchema: {
       category: z
         .enum(["electronics", "jewelery", "men's clothing", "women's clothing"])
