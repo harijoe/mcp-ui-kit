@@ -1,6 +1,7 @@
 import { McpServer } from "skybridge/server";
 import { basicAnswerWidget } from "./widgets/basic-answer-server";
-import { ecomCarouselWidget } from "./widgets/ecommerce-products";
+import { ecomCarouselWidget } from "./widgets/ecommerce-products-server";
+import { radioOptionsWidget } from "./widgets/radio-options-server";
 
 const server = new McpServer(
   {
@@ -20,6 +21,12 @@ const server = new McpServer(
     ecomCarouselWidget.metadata,
     ecomCarouselWidget.toolConfig,
     ecomCarouselWidget.handler
+  )
+  .registerWidget(
+    radioOptionsWidget.name,
+    radioOptionsWidget.metadata,
+    radioOptionsWidget.toolConfig,
+    radioOptionsWidget.handler
   );
 
 export default server;
