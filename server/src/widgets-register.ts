@@ -1,15 +1,15 @@
 import { z } from "zod";
 
 // Magic 8 Ball widget configuration
-export const magic8Ball = {
-  name: "magic-8-ball" as const,
+export const basicAnswerWidget = {
+  name: "basic-answer" as const,
   metadata: {
-    description: "Magic 8 Ball",
+    description: "Basic Answer",
   },
   toolConfig: {
-    description: "For fortune-telling or seeking advice.",
+    description: "Show an answer to a question.",
     inputSchema: {
-      question: z.string().describe("The user question."),
+      question: z.string().describe("The user's question."),
     },
   },
   handler: async ({ question }: { question: string }) => {

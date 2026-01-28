@@ -1,5 +1,5 @@
 import { McpServer } from "skybridge/server";
-import { magic8Ball } from "./widgets-register";
+import { basicAnswerWidget } from "./widgets-register";
 
 const server = new McpServer(
   {
@@ -8,10 +8,10 @@ const server = new McpServer(
   },
   { capabilities: {} }
 ).registerWidget(
-  magic8Ball.name,
-  magic8Ball.metadata,
-  magic8Ball.toolConfig,
-  magic8Ball.handler
+  basicAnswerWidget.name,
+  basicAnswerWidget.metadata,
+  basicAnswerWidget.toolConfig,
+  basicAnswerWidget.handler
 );
 // Chain more widgets here: .registerWidget(anotherWidget.name, ...)
 
