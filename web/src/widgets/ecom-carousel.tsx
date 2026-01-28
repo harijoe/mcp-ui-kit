@@ -5,7 +5,6 @@ import {
   mountWidget,
   useLayout,
   useOpenExternal,
-  useRequestModal,
   useUser,
   useWidgetState,
 } from "skybridge/web";
@@ -38,12 +37,11 @@ const translations: Record<string, Record<string, string>> = {
   },
 };
 
-const CHECKOUT_URL = "https://alpic.ai";
+const CHECKOUT_URL = "https://flowbite.com/pro/#pricing";
 
 function EcomCarousel() {
   const { theme } = useLayout();
   const { locale } = useUser();
-  const { open, isOpen } = useRequestModal();
   const openExternal = useOpenExternal();
 
   const lang = locale?.split("-")[0] ?? "en";
@@ -54,15 +52,24 @@ function EcomCarousel() {
 
   const { output, isPending } = useToolInfo<"ecom-carousel">();
   type Product = NonNullable<typeof output>["products"][number];
-  const [selected, setSelected] = useState<Product | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const [cart, setCart] = useWidgetState<{ ids: number[] }>({ ids: [] });
+  const [favorites, setFavorites] = useState<number[]>([]);
 
   function toggleCart(productId: number) {
     if (cart.ids.includes(productId)) {
       setCart({ ids: cart.ids.filter((id) => id !== productId) });
     } else {
       setCart({ ids: [...cart.ids, productId] });
+    }
+  }
+
+  function toggleFavorite(productId: number) {
+    if (favorites.includes(productId)) {
+      setFavorites(favorites.filter((id) => id !== productId));
+    } else {
+      setFavorites([...favorites, productId]);
     }
   }
 
@@ -82,7 +89,7 @@ function EcomCarousel() {
     );
   }
 
-  if (isOpen) {
+  if (showCheckout) {
     const cartItems: Product[] = [];
     let total = 0;
     for (const p of output.products) {
@@ -94,33 +101,137 @@ function EcomCarousel() {
     const checkoutUrl = new URL(CHECKOUT_URL);
     checkoutUrl.searchParams.set("cart", cart.ids.join(","));
 
+    const tax = total * 0.1;
+    const shipping = cartItems.length > 0 ? 9.99 : 0;
+    const grandTotal = total + tax + shipping;
+
     return (
-      <div className={`${theme} checkout`}>
-        <div className="checkout-title">Order summary</div>
-        <div className="checkout-items">
-          {cartItems.map((item) => (
-            <div key={item.id} className="checkout-item">
-              <span>{item.title}</span>
-              <span>${item.price.toFixed(2)}</span>
+      <section className={`${theme} bg-white py-8 antialiased dark:bg-gray-900`}>
+        <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+              Order summary
+            </h2>
+
+            <div className="mt-6 sm:mt-8">
+              <div className="relative overflow-x-auto border-b border-gray-200 dark:border-gray-800">
+                <table className="w-full text-left font-medium text-gray-900 dark:text-white md:table-fixed">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                    {cartItems.map((item) => (
+                      <tr key={item.id}>
+                        <td className="whitespace-nowrap py-4 md:w-[384px]">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center aspect-square w-10 h-10 shrink-0">
+                              <img
+                                className="h-auto w-full max-h-full object-contain"
+                                src={item.image}
+                                alt={item.title}
+                              />
+                            </div>
+                            <span className="hover:underline line-clamp-1">
+                              {item.title}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-base font-normal text-gray-900 dark:text-white">
+                          x1
+                        </td>
+                        <td className="p-4 text-right text-base font-bold text-gray-900 dark:text-white">
+                          ${item.price.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 space-y-6">
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Order summary
+                </h4>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <dl className="flex items-center justify-between gap-4">
+                      <dt className="text-gray-500 dark:text-gray-400">
+                        Original price
+                      </dt>
+                      <dd className="text-base font-medium text-gray-900 dark:text-white">
+                        ${total.toFixed(2)}
+                      </dd>
+                    </dl>
+
+                    <dl className="flex items-center justify-between gap-4">
+                      <dt className="text-gray-500 dark:text-gray-400">
+                        Shipping
+                      </dt>
+                      <dd className="text-base font-medium text-gray-900 dark:text-white">
+                        ${shipping.toFixed(2)}
+                      </dd>
+                    </dl>
+
+                    <dl className="flex items-center justify-between gap-4">
+                      <dt className="text-gray-500 dark:text-gray-400">Tax</dt>
+                      <dd className="text-base font-medium text-gray-900 dark:text-white">
+                        ${tax.toFixed(2)}
+                      </dd>
+                    </dl>
+                  </div>
+
+                  <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
+                    <dt className="text-lg font-bold text-gray-900 dark:text-white">
+                      Total
+                    </dt>
+                    <dd className="text-lg font-bold text-gray-900 dark:text-white">
+                      ${grandTotal.toFixed(2)}
+                    </dd>
+                  </dl>
+                </div>
+
+                <div className="flex items-start sm:items-center">
+                  <input
+                    id="terms-checkbox"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-brand focus:ring-2 focus:ring-brand-medium dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-brand"
+                  />
+                  <label
+                    htmlFor="terms-checkbox"
+                    className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    I agree with the{" "}
+                    <a
+                      href="#"
+                      className="text-brand hover:underline dark:text-brand-light"
+                    >
+                      Terms and Conditions
+                    </a>
+                  </label>
+                </div>
+
+                <div className="gap-4 sm:flex sm:items-center">
+                  <button
+                    type="button"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-brand focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700"
+                    onClick={() => setShowCheckout(false)}
+                  >
+                    Return to Shopping
+                  </button>
+
+                  <button
+                    type="button"
+                    className="mt-4 flex w-full items-center justify-center rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-brand-medium dark:bg-brand dark:hover:bg-brand-strong dark:focus:ring-brand-strong sm:mt-0"
+                    onClick={() => openExternal(checkoutUrl.toString())}
+                  >
+                    Send the order
+                  </button>
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
-        <div className="checkout-total">
-          <span>Total</span>
-          <span>${total.toFixed(2)}</span>
-        </div>
-        <button
-          type="button"
-          className="checkout-button"
-          onClick={() => openExternal(checkoutUrl.toString())}
-        >
-          Checkout
-        </button>
-      </div>
+      </section>
     );
   }
-
-  const activeProduct = selected ?? output.products[0];
 
   // Helper to render star ratings
   function renderStars(rate: number) {
@@ -151,7 +262,7 @@ function EcomCarousel() {
       <button
         type="button"
         className="text-white bg-brand flex items-center box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-        onClick={() => open({ title: "Proceed to checkout ?" })}
+        onClick={() => setShowCheckout(true)}
         disabled={cart.ids.length === 0}
       >
         <svg
@@ -175,69 +286,38 @@ function EcomCarousel() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
         {output.products.map((product) => {
           const inCart = cart.ids.includes(product.id);
+          const isFavorite = favorites.includes(product.id);
           return (
             <div
               key={product.id}
               className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
             >
               <div className="h-56 w-full">
-                <button
-                  type="button"
-                  className="w-full h-full"
-                  onClick={() => setSelected(product)}
-                >
-                  <img
-                    className="mx-auto h-full object-contain"
-                    src={product.image}
-                    alt={product.title}
-                  />
-                </button>
+                <img
+                  className="mx-auto h-full object-contain"
+                  src={product.image}
+                  alt={product.title}
+                />
               </div>
 
               <div className="pt-6">
                 <div className="mb-4 flex items-center justify-between gap-4">
-                  <span className="me-2 rounded bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-800 dark:bg-primary-900 dark:text-primary-300">
+                  <span className="me-2 rounded bg-brand-light/20 px-2.5 py-0.5 text-xs font-medium text-brand dark:bg-brand/20 dark:text-brand-light">
                     {product.category}
                   </span>
 
                   <div className="flex items-center justify-end gap-1">
                     <button
                       type="button"
-                      className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                      onClick={() => setSelected(product)}
-                    >
-                      <span className="sr-only">Quick look</span>
-                      <svg
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"
-                        />
-                        <path
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                        />
-                      </svg>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`rounded-lg p-2 ${inCart ? "text-red-500 hover:bg-red-100 dark:hover:bg-red-900" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"}`}
-                      onClick={() => toggleCart(product.id)}
+                      className={`rounded-lg p-2 ${isFavorite ? "text-red-500 hover:bg-red-100 dark:hover:bg-red-900" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"}`}
+                      onClick={() => toggleFavorite(product.id)}
                     >
                       <span className="sr-only">Add to Favorites</span>
                       <svg
                         className="h-5 w-5"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
-                        fill={inCart ? "currentColor" : "none"}
+                        fill={isFavorite ? "currentColor" : "none"}
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -252,13 +332,9 @@ function EcomCarousel() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  className="text-left text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white line-clamp-2"
-                  onClick={() => setSelected(product)}
-                >
+                <h3 className="text-lg font-semibold leading-tight text-gray-900 dark:text-white line-clamp-2">
                   {product.title}
-                </button>
+                </h3>
 
                 <div className="mt-2 flex items-center gap-2">
                   <div className="flex items-center">
@@ -352,27 +428,6 @@ function EcomCarousel() {
           );
         })}
       </div>
-
-      {/* Product Detail Panel */}
-      {activeProduct && (
-        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-            {activeProduct.title}
-          </h3>
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex items-center">{renderStars(activeProduct.rating.rate)}</div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
-              {activeProduct.rating.rate.toFixed(1)}
-            </p>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              ({activeProduct.rating.count} reviews)
-            </p>
-          </div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
-            {activeProduct.description}
-          </p>
-        </div>
-      )}
     </div>
   );
 }
