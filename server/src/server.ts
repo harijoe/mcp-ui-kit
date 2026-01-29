@@ -1,7 +1,7 @@
 import { McpServer } from "skybridge/server";
 import { basicTextWidget } from "./widgets/basic-text-server";
 import { checkboxOptionsWidget } from "./widgets/checkbox-options-server";
-import { dataTableWidget } from "./widgets/basic-table-server";
+import { dataTableWidget } from "./widgets/data-table-server";
 import { ecomCarouselWidget } from "./widgets/e-commerce-server";
 import { lineChartWidget } from "./widgets/line-chart-server";
 import { radioOptionsWidget } from "./widgets/radio-options-server";

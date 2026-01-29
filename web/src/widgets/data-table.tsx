@@ -1,14 +1,44 @@
 import "@/index.css";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { mountWidget, useLayout } from "skybridge/web";
 import { useToolInfo } from "../helpers";
 
 function DataTableWidget() {
   const { theme } = useLayout();
-  const { output, isPending } = useToolInfo<"basic-table">();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const { output, isPending } = useToolInfo<"data-table">();
+  
+  // Initialize from server values
+  const [searchQuery, setSearchQuery] = useState(output?.search || "");
+  const [selectedCategory, setSelectedCategory] = useState(output?.category || "All");
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchSuggestions(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setShowCategorySuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Get unique product names for search autocomplete
+  const searchSuggestions = useMemo(() => {
+    if (!output?.tableData?.rows || !searchQuery) return [];
+    const query = searchQuery.toLowerCase();
+    return output.tableData.rows
+      .filter((row) => row.name.toLowerCase().includes(query))
+      .map((row) => row.name)
+      .slice(0, 5);
+  }, [output?.tableData?.rows, searchQuery]);
 
   const filteredRows = useMemo(() => {
     if (!output?.tableData?.rows) return [];
@@ -20,6 +50,12 @@ function DataTableWidget() {
       return matchesSearch && matchesCategory;
     });
   }, [output?.tableData?.rows, searchQuery, selectedCategory]);
+
+  // Filter categories for autocomplete
+  const categorySuggestions = useMemo(() => {
+    if (!output?.tableData?.categories) return [];
+    return ["All", ...output.tableData.categories];
+  }, [output?.tableData?.categories]);
 
   if (isPending) {
     return (
@@ -59,34 +95,73 @@ function DataTableWidget() {
     <div className={`${theme} bg-neutral-primary p-6`}>
       {/* Filters Section */}
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
-        {/* Search Input */}
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+        {/* Search Input with Autocomplete */}
+        <div className="relative flex-1" ref={searchRef}>
+          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none z-10">
             <span className="icon-[flowbite--search-outline] w-4 h-4 text-body"></span>
           </div>
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSearchSuggestions(true);
+            }}
+            onFocus={() => setShowSearchSuggestions(true)}
             className="block w-full p-2.5 ps-10 text-sm text-heading border border-default rounded-base bg-neutral-secondary-soft focus:ring-brand focus:border-brand"
             placeholder="Search products..."
+            autoComplete="off"
           />
+          {/* Search Suggestions Dropdown */}
+          {showSearchSuggestions && searchSuggestions.length > 0 && (
+            <div className="absolute z-20 w-full mt-1 bg-neutral-primary border border-default rounded-base shadow-lg max-h-60 overflow-auto">
+              {searchSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className="w-full px-4 py-2.5 text-sm text-left text-heading hover:bg-neutral-secondary-soft focus:bg-neutral-secondary-soft focus:outline-none"
+                  onClick={() => {
+                    setSearchQuery(suggestion);
+                    setShowSearchSuggestions(false);
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Category Select */}
-        <div className="sm:w-48">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="block w-full p-2.5 text-sm text-heading border border-default rounded-base bg-neutral-secondary-soft focus:ring-brand focus:border-brand"
+        {/* Category Select with Autocomplete */}
+        <div className="relative sm:w-48" ref={categoryRef}>
+          <button
+            type="button"
+            onClick={() => setShowCategorySuggestions(!showCategorySuggestions)}
+            className="flex items-center justify-between w-full p-2.5 text-sm text-heading border border-default rounded-base bg-neutral-secondary-soft focus:ring-brand focus:border-brand"
           >
-            <option value="All">All Categories</option>
-            {output.tableData.categories?.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+            <span>{selectedCategory === "All" ? "All Categories" : selectedCategory}</span>
+            <span className="icon-[flowbite--chevron-down-outline] w-4 h-4 text-body"></span>
+          </button>
+          {/* Category Suggestions Dropdown */}
+          {showCategorySuggestions && (
+            <div className="absolute z-20 w-full mt-1 bg-neutral-primary border border-default rounded-base shadow-lg max-h-60 overflow-auto">
+              {categorySuggestions.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={`w-full px-4 py-2.5 text-sm text-left hover:bg-neutral-secondary-soft focus:bg-neutral-secondary-soft focus:outline-none ${
+                    selectedCategory === category ? "text-brand font-medium" : "text-heading"
+                  }`}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setShowCategorySuggestions(false);
+                  }}
+                >
+                  {category === "All" ? "All Categories" : category}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
