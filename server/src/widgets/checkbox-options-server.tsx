@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 // Checkbox Options widget configuration
 export const checkboxOptionsWidget = {
   name: "checkbox-options" as const,
@@ -7,15 +5,13 @@ export const checkboxOptionsWidget = {
     description: "Checkbox Options Selector",
   },
   toolConfig: {
-    description: "Display a question with checkbox options to choose from.",
-    inputSchema: {
-      question: z.string().describe("The question to display"),
-    },
+    description: "Display checkbox options to choose from.",
+    inputSchema: {},
   },
-  handler: async ({ question }: { question: string }) => {
+  handler: async () => {
     try {
       return {
-        structuredContent: { question },
+        structuredContent: {},
         content: [],
         isError: false,
       };

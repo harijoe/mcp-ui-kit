@@ -13,7 +13,7 @@ const options = [
 
 function CheckboxOptionsWidget() {
   const { theme } = useLayout();
-  const { output, isPending } = useToolInfo<"checkbox-options">();
+  const { isPending } = useToolInfo<"checkbox-options">();
   const [selected, setSelected] = useState<string[]>([]);
 
   function toggleOption(optionId: string) {
@@ -50,14 +50,6 @@ function CheckboxOptionsWidget() {
     );
   }
 
-  if (!output) {
-    return (
-      <div className={`${theme} bg-neutral-primary p-6`}>
-        <p className="text-gray-500 dark:text-gray-400">No question available.</p>
-      </div>
-    );
-  }
-
   const selectedLabels = options
     .filter((opt) => selected.includes(opt.id))
     .map((opt) => opt.label);
@@ -66,7 +58,7 @@ function CheckboxOptionsWidget() {
     <div className={`${theme} bg-neutral-primary p-6`}>
       <fieldset>
         <legend className="text-lg font-semibold text-heading mb-4">
-          {output.question}
+          Select options
         </legend>
 
         <div className="space-y-4">

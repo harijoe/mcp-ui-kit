@@ -13,7 +13,7 @@ const options = [
 
 function RadioOptionsWidget() {
   const { theme } = useLayout();
-  const { output, isPending } = useToolInfo<"radio-options">();
+  const { isPending } = useToolInfo<"radio-options">();
   const [selected, setSelected] = useState<string | null>(null);
 
   if (isPending) {
@@ -42,19 +42,11 @@ function RadioOptionsWidget() {
     );
   }
 
-  if (!output) {
-    return (
-      <div className={`${theme} bg-neutral-primary p-6`}>
-        <p className="text-body">No question available.</p>
-      </div>
-    );
-  }
-
   return (
     <div className={`${theme} bg-neutral-primary p-6`}>
       <fieldset>
         <legend className="text-lg font-semibold text-heading mb-4">
-          {output.question}
+          Select an option
         </legend>
 
         <div className="space-y-4">
