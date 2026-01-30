@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { tableData } from "../data/table-data";
+import { tableData } from "../data/table-data.js";
 
 // Data Table widget configuration
 export const dataTableWidget = {
@@ -10,9 +10,19 @@ export const dataTableWidget = {
   toolConfig: {
     description: "Display a table of products with search and filtering.",
     inputSchema: {
-      search: z.string().optional().describe("Search query to filter products by name or color"),
+      search: z
+        .string()
+        .optional()
+        .describe("Search query to filter products by name or color"),
       category: z
-        .enum(["Laptop", "Tablet", "Accessories", "Wearables", "Phone", "Audio"])
+        .enum([
+          "Laptop",
+          "Tablet",
+          "Accessories",
+          "Wearables",
+          "Phone",
+          "Audio",
+        ])
         .optional()
         .describe("Filter by product category"),
     },
@@ -22,7 +32,13 @@ export const dataTableWidget = {
     category,
   }: {
     search?: string;
-    category?: "Laptop" | "Tablet" | "Accessories" | "Wearables" | "Phone" | "Audio";
+    category?:
+      | "Laptop"
+      | "Tablet"
+      | "Accessories"
+      | "Wearables"
+      | "Phone"
+      | "Audio";
   }) => {
     try {
       let filteredRows = tableData.rows;
